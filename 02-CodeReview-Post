@@ -1,0 +1,39 @@
+pipeline{
+    agent any
+    tools{
+        maven 'mymaven'
+    }
+    stages{
+        stage('clone the Repo'){
+            steps{
+                git 'https://github.com/Sonal0409/DevOpsCodeDemo.git'
+            }         
+        }
+        stage('review the code'){
+            steps{
+                sh 'mvn pmd:pmd'
+            }
+            post{
+                success{
+                    recordIssues sourceCodeRetention: 'LAST_BUILD', stopBuild: true, tools: [pmdParser(pattern: '**/pmd.xml')]
+                }
+            }
+         }
+         stage('compile the code'){
+            steps{
+                sh 'mvn compile'
+            }
+         }
+         stage('test the code'){
+            steps{
+                sh 'mvn test'
+            }
+         }
+         stage('build the package'){
+            steps{
+                sh 'mvn package'
+            }
+         }
+    }
+}
+
