@@ -13,9 +13,7 @@ pipeline{
         ENVIRONMENT = "${params.environment}"
         PASSWORD = "${params.password}"
     }
-    triggers{
-       // pollSCM('H/5 * * * *')
-    }
+ 
     stages{
         stage('print parameters'){
             steps{
