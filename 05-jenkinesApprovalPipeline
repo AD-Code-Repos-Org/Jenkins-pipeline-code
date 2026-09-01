@@ -1,0 +1,31 @@
+pipeline{
+    agent any
+    tools{
+        maven 'mymaven'
+    }
+    stages{
+        stage('clone the Repo'){
+            steps{
+                git 'https://github.com/Sonal0409/DevOpsCodeDemo.git'
+            }
+        }
+        stage('test the code'){
+            steps{
+                script{
+                    timeout(time: 1, unit: 'MINUTES'){
+                        input(
+                            id: 'userInput', 
+                            message: 'Do you want to proceed with the build?', ok: 'Yes, Proceed'
+                        )
+                    }
+                }
+                sh 'mvn test'
+            }
+        }
+        stage('build the package'){                                                       
+            steps{
+                sh 'mvn package'
+            }
+        }
+    }
+}

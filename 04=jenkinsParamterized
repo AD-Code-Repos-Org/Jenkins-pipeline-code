@@ -8,6 +8,7 @@ pipeline{
     }
     stages{
         stage('build code on dev env '){
+            //can add agent with label to run the stage on specific node ******
             when{
                     expression{
                         params.environment == 'dev'
@@ -31,4 +32,5 @@ pipeline{
                 sh 'mvn test'
             }
         }
+    }
 }
