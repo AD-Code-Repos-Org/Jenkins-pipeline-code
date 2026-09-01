@@ -1,0 +1,31 @@
+pipeline{
+    agent any
+   // option with parameters enable on the menu of the jenkins job
+    parameters{
+        string(name: 'branch', defaultValue: 'main', description: 'Enter the branch name')
+        string(name: 'mavenGoals', defaultValue: 'clean install', description: 'Enter the maven goals')
+        string(name: 'buildNumber', defaultValue: '1', description: 'Enter the build number')
+        choice(name: 'environment', choices: ['dev', 'qa', 'prod'], description: 'Select the environment')
+        password(name: 'password', defaultValue: 'testingpws', description: 'Enter the password')
+    }
+    environment{
+        BUILD_NUMBER = "${params.buildNumber}"
+        ENVIRONMENT = "${params.environment}"
+        PASSWORD = "${params.password}"
+    }
+    triggers{
+       // pollSCM('H/5 * * * *')
+    }
+    stages{
+        stage('print parameters'){
+            steps{
+                //git branch: "${params.branch}", url: 'https://github.com/Sonal0409/DevOpsCodeDemo.git'
+                echo "Branch name is: ${params.branch}"
+                echo "Maven goals are: ${params.mavenGoals}"
+                echo "Build number is: ${params.buildNumber}"
+                echo "Environment is: ${params.environment}"
+                echo "Password is: ${params.password}"
+            }
+        }
+    }
+}
