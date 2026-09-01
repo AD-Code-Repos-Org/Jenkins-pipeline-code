@@ -1,0 +1,38 @@
+pipeline{
+    agent any
+    tools{
+        maven 'mymaven'
+    }
+    stages{
+        stage('clone the Repo'){
+            steps{
+                git 'https://github.com/Sonal0409/DevOpsCodeDemo.git'
+            }
+        }
+        stage('review the code'){
+            steps{
+                catchError(buildResult: 'SUCCESS', stageResult: 'FAILURE'){
+                   retry(2){
+                        sh 'mvn pmd:Pmd' //risky code which many fail and we want to handle the error and continue the build
+                    }
+                    //buildresult can be SUCCESS, UNSTABLE, FAILURE, NOT_BUILT, ABORTED
+                }   
+            }
+        }
+         stage('compile the code'){
+            steps{
+                sh 'mvn compile'
+            }
+         }
+         stage('test the code'){
+            steps{
+                sh 'mvn test'
+            }
+         }
+         stage('build the package'){
+            steps{
+                sh 'mvn package'
+            }
+         }
+    }
+}
