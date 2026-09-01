@@ -9,8 +9,8 @@ pipeline{
         password(name: 'passwordsd', defaultValue: 'testingpws', description: 'Enter the password')
     }
     environment{
-        BUILD_NUMBER = "${params.buildNumber}"
-        ENVIRONMENT = "${params.environment}"
+        BUILD_NUMBER = "1.1"
+        ENVIRONMENT = "DEV"
         PASSWORD = "${params.password}"
     }
 
