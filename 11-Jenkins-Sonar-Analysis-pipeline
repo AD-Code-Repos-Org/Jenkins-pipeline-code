@@ -31,8 +31,6 @@ pipeline{
         }
         stage('SonarQube SAST Analysis'){
             steps{
-                //snippet generator - withSonarQubeEnv('SonarQube') provide token
-                // sh 'mvn sonar:sonar -Dsonar.projectKey=SonarQubeCoverageJava -Dsonar.host.url=http://localhost:9000 -Dsonar.login=admin -Dsonar.password=admin'
                 environment {
                     SONARQUBE_SCANNER_HOME = tool 'sonartool'
                 }
