@@ -1,0 +1,68 @@
+pipeline {
+    agent none
+
+    tools {
+        maven 'mymaven' 
+    }
+
+    parameters {
+        choice(
+            name: 'AGENT_TYPE',
+            choices: [ 'linux-node',’test_node’,’staging_node’],
+            description: 'Select the agent to run pipeline on'
+        )
+    }
+
+    stages {
+
+        stage('Checkout Code') {
+            agent { label "${params.AGENT_TYPE}" }
+            steps {
+                echo "Running checkout on agent: ${params.AGENT_TYPE}"
+
+                git  'https://github.com/Sonal0409/DevOpsCodeDemo.git'
+
+                stash includes: '**', name: 'SOURCECODE'
+            }
+        }
+
+        stage('Build Code') {
+            agent { label "${params.AGENT_TYPE}" }
+            steps {
+                unstash 'SOURCECODE'
+
+                echo "Building WAR using Maven..."
+
+  
+
+                sh "mvn clean package"
+
+                // Assuming your WAR comes into target/*.war
+                stash includes: 'target/*.war', name: 'WARFILE'
+            }
+        }
+
+        stage('Test Build') {
+            agent { label "${params.AGENT_TYPE}" }
+            steps {
+                unstash 'WARFILE'
+
+                echo "Running tests on WAR file"
+                sh "ls -l target/"
+
+                // pass again to next stage
+                stash includes: 'target/*.war', name: 'WARFILE'
+            }
+        }
+
+        stage('Deploy build') {
+            agent { label "${params.AGENT_TYPE}" }
+            steps {
+                unstash 'WARFILE'
+
+                echo "Deploying WAR…"
+                sh "ls -l target/"
+            }
+        }
+    }
+}
