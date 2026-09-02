@@ -1,0 +1,82 @@
+
+
+// Make sure the job is triggered by Trigger builds remotely (e.g., from scripts) 
+// option is checked in the job configuration and a token is provided. (token1)
+
+pipeline{
+    agent any
+    tools{
+        maven 'mymaven'
+    }
+    stages{
+        stage('clone the Repo'){
+            steps{
+                git 'https://github.com/adhongade1/DevOpsCodeDemo.git'
+            }
+        }
+        stage('Compile'){
+            steps{
+                  sh 'mvn compile'
+            }
+            post{
+                //always{
+                //    slackSend channel: 'slack-jenkins-channel', message: 'checkout of code completed'
+                //}
+                success{
+                    slackSend channel: 'slack-jenkins-channel', message: 'compile of code success'
+                }
+                failure{
+                    slackSend channel: 'slack-jenkins-channel', message: 'compile of code failed'
+                }
+            }
+        }
+        stage('CodeReview'){
+            steps{
+                  sh 'mvn pmd:pmd'
+            }
+            post{
+                //always{
+                //    slackSend channel: 'slack-jenkins-channel', message: 'checkout of code completed'
+                //}
+                success{
+                    slackSend channel: 'slack-jenkins-channel', message: 'code review success'
+                }
+                failure{
+                    slackSend channel: 'slack-jenkins-channel', message: 'code review failed'
+                }
+            }
+        }
+        stage('UnitTest'){
+            steps{
+                   sh 'mvn test'
+            }
+            post{
+                //always{
+                //    slackSend channel: 'slack-jenkins-channel', message: 'checkout of code completed'
+                //}
+                success{
+                    slackSend channel: 'slack-jenkins-channel', message: 'unit test success'
+                }
+                failure{
+                    slackSend channel: 'slack-jenkins-channel', message: 'unit test failed'
+                }
+            }
+        }
+        stage('build Package'){
+            steps{
+                    sh 'mvn package'
+            }
+            post{
+                //always{
+                //    slackSend channel: 'slack-jenkins-channel', message: 'checkout of code completed'
+                //}
+                success{
+                    slackSend channel: 'slack-jenkins-channel', message: 'build package success'
+                }
+                failure{
+                    slackSend channel: 'slack-jenkins-channel', message: 'build package failed'
+                }
+            }
+        }
+    }
+} 
