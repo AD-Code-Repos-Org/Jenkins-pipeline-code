@@ -9,6 +9,7 @@ pipeline{
                 git 'https://github.com/adhongade1/SonarQubeCoverageJava.git'
             }
         }
+        /*
         stage('Compile'){
             steps{
                   sh 'mvn compile'
@@ -24,26 +25,39 @@ pipeline{
                    sh 'mvn test'
             }
         }
+        */
         stage('package'){
             steps{
                   sh 'mvn package'
             }
         }
         stage('SonarQube SAST Analysis'){
-            steps{
+
                 environment {
                     SONARQUBE_SCANNER_HOME = tool 'sonartool'
                 }
+                steps{
                 //sonar client should connect to the sonar server and send the code for analysis
-                withSonarQubeEnv('mysonar') {
-                    sh '''
-                        ${SONARQUBE_SCANNER_HOME}/bin/sonar-scanner \
-                        -Dsonar.projectKey=sonar-demo-org-aug2026_sonar-demo-org-aug2026 \
-                        -Dsonar.java.binaries=target/classes \
-                        -Dsonar.organization=sonar-demo-org-aug2026 \
-                    '''
+                    withSonarQubeEnv('mysonar') {
+                        sh '''
+                            ${SONARQUBE_SCANNER_HOME}/bin/sonar-scanner \
+                            -Dsonar.projectKey=sonar-demo-org-aug2026_sonar-demo-org-aug2026 \
+                            -Dsonar.java.binaries=target/classes \
+                            -Dsonar.organization=sonar-demo-org-aug2026 \
+                        '''
+                    }
+                }
+            }
+        stage('Quality Gate'){
+            steps{
+                timeout(time: 5, unit: 'MINUTES'){
+                    waitForQualityGate abortPipeline: true
                 }
             }
         }
+        stage('Deploy'){
+            steps{
+                echo 'Deploy the code to the server'
+            }
+        } 
     }
-}
