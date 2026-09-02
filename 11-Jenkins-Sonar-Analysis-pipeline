@@ -1,0 +1,51 @@
+pipeline{
+    agent any
+    tools{
+        maven 'mymaven'
+    }
+    stages{
+        stage('clone the Repo'){
+            steps{
+                git 'https://github.com/adhongade1/SonarQubeCoverageJava.git'
+            }
+        }
+        stage('Compile'){
+            steps{
+                  sh 'mvn compile'
+            }
+        }
+        stage('CodeReview'){
+            steps{
+        		  sh 'mvn pmd:pmd'
+            }
+        }
+        stage('UnitTest'){
+            steps{
+                   sh 'mvn test'
+            }
+        }
+        stage('package'){
+            steps{
+                  sh 'mvn package'
+            }
+        }
+        stage('SonarQube SAST Analysis'){
+            steps{
+                //snippet generator - withSonarQubeEnv('SonarQube') provide token
+                // sh 'mvn sonar:sonar -Dsonar.projectKey=SonarQubeCoverageJava -Dsonar.host.url=http://localhost:9000 -Dsonar.login=admin -Dsonar.password=admin'
+                environment {
+                    SONARQUBE_SCANNER_HOME = tool 'sonartool'
+                }
+                //sonar client should connect to the sonar server and send the code for analysis
+                withSonarQubeEnv('mysonar') {
+                    sh '''
+                        ${SONARQUBE_SCANNER_HOME}/bin/sonar-scanner \
+                        -Dsonar.projectKey=sonar-demo-org-aug2026_sonar-demo-org-aug2026 \
+                        -Dsonar.java.binaries=target/classes \
+                        -Dsonar.organization=sonar-demo-org-aug2026 \
+                    '''
+                }
+            }
+        }
+    }
+}
