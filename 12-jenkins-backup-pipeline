@@ -1,0 +1,84 @@
+pipeline {
+    agent any
+	
+	#IAM role has to be created 
+	#ASW CLI has to be installed 
+
+    environment {
+		# s3 bucket is already created 
+        BACKUP_FILE = "jenkins-backup.tar.gz"
+        S3_BUCKET   = "s3://jenkinsbackup-bucket/jenkins-backup.tar.gz"
+		
+		#BACKUP_FILE = "jenkins-backup-${new Date().format('yyyy-MM-dd-HH-mm')}.tar.gz"
+        #S3_BUCKET   = "jenkinsbackup-bucket/jenkins-backups"
+    }
+
+    stages {
+        stage('download backup') {
+            steps {
+                sh '''
+                echo "downloading jenkins backup from s3..."
+				aws s3 cp ${S3_BUCKET} ${BACKUP_FILE}
+				ls -lh ${BACKUP_FILE}
+                '''
+            }
+        }
+		
+
+        stage('stop jenkins') {
+            steps {
+                sh '''
+					echo "stoping jenkins..."
+					sudo systemctl stop jenkins
+					sudo systemctl status jenkin --no-pager
+					'''
+            }
+        }
+		
+		stage('remove existing jenkins data') {
+            steps {
+                sh '''
+					echo "removing exeisting jenkins home..."
+					sudo rm -rf /var/lib/jenkins
+					'''
+            }
+        }
+		
+		stage('Restore jenkins backup') {
+            steps {
+                sh '''
+					echo "Restore jenkins backup..."
+					sudo tar -zxvf ${BACKUP_FILE} -C /
+					'''
+            }
+        }
+		
+		stage('Fix Permission') {
+            steps {
+                sh '''
+					echo "Fixing jenkins Permission..."
+					sudo chown -R jenkins:jenkins /var/lib/jenkins
+					'''
+            }
+        }
+		
+		stage('start jenkins') {
+			steps {
+				sh '''
+					echo "starting jenkins..."
+					sudo systemctl start jenkins
+					sudo systemctl status jenkin --no-pager
+					'''
+			}
+		}
+    }
+	
+	post {
+		sucess {
+			echo 'jenkins restore completed successfully'
+		}
+		failure {
+			echo 'jenkins restore failed'
+		}
+	}
+}

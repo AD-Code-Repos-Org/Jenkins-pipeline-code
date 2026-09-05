@@ -1,0 +1,46 @@
+pipeline{
+    agent any
+    tools{
+        maven 'mymaven'
+    }
+    stages{
+        stage('Checkout Code'){
+            steps{
+                git 'https://github.com/Sonal0409/SonarQubeCoverageJava.git'
+            }
+        }
+        stage('Build and Test'){
+            steps{
+                sh 'mvn package'
+            }
+        }
+        stage('SonarQube Analysis'){
+// scannerHome is the variable name which we have defined in environment
+//  and sonartool is the name of the tool which we have defined in jenkins global tool configuration
+// we need this variable to run the sonar-scanner command in the next step
+// the sonar tool is required to run the sonar-scanner command 
+// which will analyze the code and send the report to sonarqube server
+       environment{
+                scannerHome = tool 'sonartool'
+            }
+            steps{
+                withSonarQubeEnv('mysonar'){
+// write shell command to run the sonar-scanner command
+// we need to specify the organization details and project key, 
+// project name and the source code location in the sonar
+// ''' -> in jenkins this represents a multi-line string,
+//  which allows us to write the command in multiple lines for better readability'
+                sh '''${scannerHome}/bin/sonar-scanner \
+                    -Dsonar.projectKey=sonar-demo-org-may2026_sonar-demo-may-project \
+                    -Dsonar.organization=sonar-demo-org-may2026 \
+                    -Dsonar.java.binaries=target/classes \  
+                      
+                 '''   
+                }
+
+               
+            }
+        }
+    }
+
+}
